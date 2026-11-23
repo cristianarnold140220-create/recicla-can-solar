@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RECICLA-CAN SOLAR PRO - Gemelo Digital de Ingeniería 3D & Simulador Físico</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome 6 Pro Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Three.js (r128) & OrbitControls para Renderizado 3D de Grado Industrial -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Google Fonts: Space Grotesk, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            tech: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            solar: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#eab308',
+              glow: '#fbbf24',
+            },
+            eco: {
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              900: '#064e3b',
+            },
+            pet: {
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0284c7',
+            },
+            arduino: {
+              teal: '#00979D',
+              dark: '#006468',
+            }
+          },
+          boxShadow: {
+            'neon-green': '0 0 35px rgba(16, 185, 129, 0.45)',
+            'neon-solar': '0 0 35px rgba(245, 158, 11, 0.45)',
+            'neon-cyan': '0 0 35px rgba(56, 189, 248, 0.45)',
+            'card-glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            'totem-deep': '0 30px 90px -15px rgba(0, 0, 0, 0.95), 0 0 50px rgba(16, 185, 129, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Efecto CRT Scanline & Display LCD 16x2 Ultra Realista */
+    .lcd-glass-pro {
+      background: radial-gradient(circle at 50% 50%, #0d3b66 0%, #05192d 100%);
+      border: 3px solid #1e293b;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95), 0 0 25px rgba(56, 189, 248, 0.35);
+      letter-spacing: 2.8px;
+      text-shadow: 0 0 10px rgba(125, 211, 252, 0.95);
+      position: relative;
+    }
+    .lcd-glass-pro::after {
+      content: " ";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Brillo holográfico especial para Damarish Yonsu Ch. C. */
+    .hologram-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(2, 132, 199, 0.15) 50%, rgba(234, 179, 8, 0.18) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hologram-card::after {
+      content: '';
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      width: 300%;
+      height: 300%;
+      background: linear-gradient(60deg, transparent 35%, rgba(255,255,255,0.12) 50%, transparent 65%);
+      transform: rotate(35deg);
+      animation: holoShine 4.5s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes holoShine {
+      0% { transform: translateY(-70%) rotate(35deg); }
+      100% { transform: translateY(70%) rotate(35deg); }
+    }
+
+    /* Glassmorphism de laboratorio */
+    .glass-panel {
+      background: rgba(11, 17, 32, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Scrollbars elegantes */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: #050811; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+
+    /* Canvas render sharpness */
+    canvas {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    /* Pulsos de sonar ultrasónico */
+    @keyframes sonarWave {
+      0% { transform: scale(0.6); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+    .sonar-active {
+      animation: sonarWave 1.4s ease-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-[#03060c] text-slate-100 font-sans min-h-screen flex flex-col selection:bg-eco-500 selection:text-slate-950 overflow-x-hidden antialiased">
+
+  <!-- ================= HEADER PRO DE INGENIERÍA & ACREDITACIÓN OFICIAL ================= -->
+  <header class="sticky top-0 z-50 bg-[#060a14]/90 backdrop-blur-2xl border-b border-slate-800/80 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo y Badge de Gemelo Digital -->
+      <div class="flex items-center gap-4">
+        <div class="relative group cursor-pointer" onclick="resetSimulator()">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-eco-500 via-teal-500 to-solar-400 p-[2px] shadow-neon-green transition-transform duration-300 group-hover:scale-105">
+            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+              <i class="fa-solid fa-recycle text-eco-400 text-xl group-hover:rotate-180 transition-transform duration-700"></i>
+            </div>
+          </div>
+          <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-solar-400 rounded-full border-2 border-slate-950 flex items-center justify-center text-[8px] text-slate-950 font-black">
+            <i class="fa-solid fa-bolt"></i>
+          </span>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="font-black text-xl sm:text-2xl tracking-tight text-white font-tech">
+              RECICLA<span class="text-eco-400">-CAN</span> <span class="text-solar-400 text-lg font-bold">SOLAR</span>
+            </h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase bg-gradient-to-r from-solar-500/20 via-eco-500/20 to-pet-500/20 border border-eco-500/40 text-eco-300 shadow-sm flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-eco-400 animate-ping"></span> GEMELO DIGITAL 3D & SIMULADOR
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium hidden md:block">
+            Estación Automatizada Autosustentable • Facultad de Ingeniería • Universidad Continental
+          </p>
+        </div>
+      </div>
+
+      <!-- CRÉDITO DE HONOR: DAMARISH YONSU CH. C. -->
+      <div class="flex items-center gap-3">
+        <div class="relative hologram-card p-[1.5px] rounded-2xl border border-eco-500/50 shadow-neon-green/30 group">
+          <div class="px-4 py-2 bg-slate-950/90 rounded-2xl flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-eco-400/20 via-teal-500/20 to-solar-400/20 border border-eco-500/40 flex items-center justify-center text-eco-400 group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-award text-lg text-solar-300"></i>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase tracking-widest font-black text-slate-400 block leading-tight flex items-center justify-end gap-1">
+                <i class="fa-solid fa-star text-solar-400 text-[8px]"></i> PROYECTO DE INVESTIGACIÓN APLICADA
+              </span>
+              <span class="text-xs sm:text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-eco-300 via-teal-200 to-solar-300">
+                Elaborado por: Damarish Yonsu Ch. C.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= BARRA DE TELEMETRÍA DE ALTA FRECUENCIA ================= -->
+  <section class="bg-gradient-to-b from-[#060a14] via-[#050812] to-[#03060c] border-b border-slate-800/80 pt-5 pb-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-4">
+      
+      <!-- Encabezado del Tablero y Selector de Modos -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700/80 text-eco-400 text-xs font-semibold mb-2">
+            <i class="fa-solid fa-microchip"></i> Microcontrolador: ATmega328P @ 16 MHz / ESP32 • Protocolo I2C 100 kHz • PWM 50 Hz
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight font-tech">
+            Laboratorio de Simulación Mecatrónica & Banco de Pruebas
+          </h2>
+          <p class="text-slate-400 text-xs sm:text-sm max-w-2xl mt-0.5">
+            Interacción en tiempo real con física cinemática de envases PET, dosificación por servomotor, ultrasonido time-of-flight y balance fotovoltaico.
+          </p>
+        </div>
+
+        <!-- Controles rápidos del laboratorio -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Toggle Vista 2.5D / 3D Interactivo -->
+          <button id="btnToggle3D" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-100 border border-slate-600 text-xs font-black flex items-center gap-2 transition-all shadow-md active:scale-95">
+            <i class="fa-solid fa-cube text-pet-400" id="iconViewMode"></i>
+            <span id="textViewMode">Vista: 3D Interactivo</span>
+          </button>
+
+          <!-- Toggle Sonido Sintetizado Web Audio -->
+          <button id="btnSoundToggle" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-2 transition-all active:scale-95">
+            <i class="fa-solid fa-volume-high text-solar-400" id="iconSound"></i>
+            <span id="textSound">Audio: 1000/1500 Hz ON</span>
+          </button>
+
+          <!-- Toggle Ciclo Solar Mediodía/Noche -->
+          <button id="btnDayNight" class="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold flex items-center gap-2 transition-all active:scale-95">
+            <i class="fa-solid fa-sun text-solar-400" id="iconDayNight"></i>
+            <span id="textDayNight">Sol: 1000 W/m² (13.6V)</span>
+          </button>
+
+          <!-- Demo Secuencial Automática -->
+          <button id="btnAutoDemo" class="px-4 py-2 rounded-xl bg-gradient-to-r from-eco-500 via-teal-500 to-eco-600 hover:from-eco-400 hover:to-teal-400 text-slate-950 text-xs font-black flex items-center gap-2 shadow-neon-green transition-all active:scale-95">
+            <i class="fa-solid fa-play"></i>
+            <span>Demo Ciclo Completo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tarjetas de Telemetría Dinámica -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <!-- Sensor 1: Botellas -->
+        <div class="p-3.5 rounded-2xl glass-panel border border-slate-800 relative overflow-hidden group hover:border-eco-500/50 transition-all">
+          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase">
+            <span>HC-SR04 Botellas (Pines 7/6)</span>
+            <span class="w-2 h-2 rounded-full bg-eco-400 animate-ping"></span>
+          </div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="valDistanceS1" class="text-2xl font-black text-white font-tech">35.0</span>
+            <span class="text-xs font-mono text-slate-400">cm</span>
+          </div>
+          <div id="statusDistanceS1" class="text-[10px] text-eco-400 font-mono mt-0.5 truncate">En reposo (&gt;15 cm)</div>
+        </div>
+
+        <!-- Sensor 2: Perrito -->
+        <div class="p-3.5 rounded-2xl glass-panel border border-slate-800 relative overflow-hidden group hover:border-pet-500/50 transition-all">
+          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase">
+            <span>HC-SR04 Canino (Pines 3/2)</span>
+            <span class="w-2 h-2 rounded-full bg-pet-400 animate-ping"></span>
+          </div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="valDistanceS2" class="text-2xl font-black text-white font-tech">55.0</span>
+            <span class="text-xs font-mono text-slate-400">cm</span>
+          </div>
+          <div id="statusDistanceS2" class="text-[10px] text-pet-400 font-mono mt-0.5 truncate">Zona libre (&gt;25 cm)</div>
+        </div>
+
+        <!-- Sub-sistema Fotovoltaico -->
+        <div class="p-3.5 rounded-2xl glass-panel border border-slate-800 relative overflow-hidden group hover:border-solar-500/50 transition-all">
+          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase">
+            <span>Batería 12V 4.5Ah</span>
+            <i class="fa-solid fa-battery-three-quarters text-solar-400 text-xs"></i>
+          </div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="valBatteryV" class="text-2xl font-black text-solar-300 font-tech">13.6</span>
+            <span class="text-xs font-mono text-slate-400">V DC</span>
+          </div>
+          <div id="statusSolarPanel" class="text-[10px] text-solar-400 font-mono mt-0.5 truncate">PWM Flotación: +0.68A</div>
+        </div>
+
+        <!-- Servomotor Guillotina -->
+        <div class="p-3.5 rounded-2xl glass-panel border border-slate-800 relative overflow-hidden group hover:border-purple-500/50 transition-all">
+          <div class="flex justify-between items-center text-[10px] font-mono text-slate-400 uppercase">
+            <span>Servomotor MG996R (Pin 9)</span>
+            <i class="fa-solid fa-gear text-purple-400 text-xs"></i>
+          </div>
+          <div class="mt-1 flex items-baseline gap-2">
+            <span id="valServoAngle" class="text-2xl font-black text-purple-300 font-tech">0°</span>
+            <span class="text-xs font-mono text-slate-400">Cerrado</span>
+          </div>
+          <div id="statusServoPWM" class="text-[10px] text-purple-400 font-mono mt-0.5 truncate">Pulso: 1000 µs (Tope 0°)</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= LABORATORIO PRINCIPAL: VISORES 3D / 2.5D & INSTRUMENTACIÓN ================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-grow space-y-8">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- COLUMNA IZQUIERDA: GABINETE SIMULADO 3D/2.5D + CONTROLES FÍSICOS (COL 7) -->
+      <div class="lg:col-span-7 space-y-5">
+        
+        <div class="glass-panel border border-slate-800 rounded-3xl p-5 shadow-totem-deep relative overflow-hidden">
+          
+          <!-- Encabezado de la Consola del Chasis -->
+          <div class="flex items-center justify-between pb-3.5 mb-3.5 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-eco-400 animate-pulse"></span>
+              <h3 class="text-xs font-black uppercase tracking-wider text-white">
+                Prototipo Físico: Tótem MDF 70 × 40 × 40 cm (Cap. III)
+              </h3>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button id="btnInsertBottle" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-eco-500 to-teal-500 hover:from-eco-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-neon-green flex items-center gap-1.5 active:scale-95 transition-all">
+                <i class="fa-solid fa-bottle-water"></i>
+                <span>Insertar Botella PET</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ÁREA VISUAL PRINCIPAL (INTERCAMBIABLE ENTRE 3D THREE.JS Y 2.5D CANVAS) -->
+          <div class="relative w-full h-[620px] bg-[#050811] rounded-2xl border-2 border-slate-800 overflow-hidden shadow-2xl flex items-center justify-center">
+            
+            <!-- CONTENEDOR 3D WEBGL (THREE.JS) -->
+            <div id="threeContainer" class="w-full h-full relative cursor-grab active:cursor-grabbing block"></div>
+
+            <!-- CONTENEDOR 2.5D FÍSICO INTERACTIVO (CANVAS) -->
+            <canvas id="totem2DCanvas" width="620" height="620" class="w-full h-full cursor-crosshair select-none hidden"></canvas>
+
+            <!-- OVERLAY PANTALLA LCD 16X2 I2C INDUSTRIAL (SUPERPUESTO EN AMBAS VISTAS) -->
+            <div class="absolute top-4 left-1/2 -translate-x-1/2 w-[72%] sm:w-[60%] lcd-glass-pro rounded-xl p-3.5 font-mono shadow-2xl border border-sky-400/50 pointer-events-none z-10">
+              <div class="flex justify-between items-center text-[10px] text-sky-400/90 border-b border-sky-900/60 pb-1 mb-1.5">
+                <span class="font-bold">LCD 16×2 I2C [Addr: 0x27]</span>
+                <span id="lcdPulse" class="text-eco-400 font-bold flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-eco-400 animate-ping"></span> ONLINE
+                </span>
+              </div>
+              <div id="lcdRow1" class="text-base sm:text-lg font-bold text-sky-200 tracking-widest truncate">RECICLA-CAN     </div>
+              <div id="lcdRow2" class="text-base sm:text-lg font-bold text-sky-100 tracking-widest truncate">Inserta botella </div>
+            </div>
+
+            <!-- OVERLAY INDICADORES LED EXTERNOS (PINES 12, 11, 10) Y BUZZER -->
+            <div class="absolute top-[88px] left-1/2 -translate-x-1/2 flex items-center gap-5 bg-slate-950/90 px-4 py-1.5 rounded-full border border-slate-800 shadow-xl pointer-events-none z-10">
+              <div class="flex items-center gap-1.5">
+                <div id="ledRed" class="w-3.5 h-3.5 rounded-full bg-red-600 shadow-[0_0_12px_#ef4444] transition-all"></div>
+                <span class="text-[9px] font-mono text-slate-400 font-bold">12 (0/5)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div id="ledYellow" class="w-3.5 h-3.5 rounded-full bg-amber-950 border border-amber-800 transition-all"></div>
+                <span class="text-[9px] font-mono text-slate-400 font-bold">11 (1-4)</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div id="ledGreen" class="w-3.5 h-3.5 rounded-full bg-emerald-950 border border-emerald-800 transition-all"></div>
+                <span class="text-[9px] font-mono text-slate-400 font-bold">10 (Meta)</span>
+              </div>
+              <div class="h-3 w-[1px] bg-slate-700"></div>
+              <div id="buzzerBadge" class="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[8px] text-slate-400">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+            </div>
+
+            <!-- CONTROLES IN-CANVAS -->
+            <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[10px] font-mono text-slate-400 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 pointer-events-auto z-10">
+              <span id="canvasHelpText">
+                <i class="fa-solid fa-hand-pointer text-eco-400 mr-1"></i> Arrastra para rotar en 3D • Rueda para zoom
+              </span>
+              <span class="text-slate-500 font-bold">
+                Estructura: MDF 12mm IP44
+              </span>
+            </div>
+          </div>
+
+          <!-- BANCO DE CONTROLES DIDÁCTICOS DEL ENTORNO -->
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            
+            <!-- Sensor de Proximidad Canina -->
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-white">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-dog text-amber-400"></i> Distancia Canina (Sensor 2)
+                </span>
+                <span id="badgeDistanceDog" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-pet-300 font-bold">
+                  55.0 cm
+                </span>
+              </div>
+              <input type="range" id="sliderDog" min="6" max="65" value="55" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-eco-400">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Dispensa: <strong>&le; 20.0 cm</strong> | Rearme: <strong>&gt; 25.0 cm</strong></span>
+                <button id="btnQuickDog" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[10px] active:scale-95 transition-all">
+                  Acercar Perrito
+                </button>
+              </div>
+            </div>
+
+            <!-- Potencia Solar y Nivel de Tolva -->
+            <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-white">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-sun text-solar-400"></i> Radiación Solar Fotovoltaica (10W)
+                </span>
+                <span id="badgeSolarVal" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-solar-400 font-bold">
+                  850 W/m² (13.6V)
+                </span>
+              </div>
+              <input type="range" id="sliderSolar" min="0" max="100" value="85" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-solar-400">
+              <div class="flex justify-between items-center text-[10px] text-slate-400">
+                <span>Reserva Tolva: <strong id="lblHopperPercent" class="text-solar-400">85% (2.55 kg)</strong></span>
+                <button id="btnRefillHopper" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[10px] active:scale-95 transition-all">
+                  Rellenar Tolva
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- OSCILOSCOPIO DIGITAL DE DOBLE CANAL (DSO) & ANALIZADOR LÓGICO -->
+        <div class="glass-panel border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-wave-square text-eco-400"></i>
+              <h4 class="text-xs font-black uppercase tracking-wider text-white">
+                Osciloscopio Digital de Señales (Time-of-Flight & PWM)
+              </h4>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded">
+              Base de Tiempo: 20 ms/div • 60 FPS
+            </span>
+          </div>
+
+          <div class="w-full bg-[#03060d] rounded-2xl border border-slate-800 overflow-hidden relative p-1">
+            <canvas id="scopeCanvas" width="620" height="110" class="w-full h-24 block"></canvas>
+            <div class="absolute top-2 left-3 flex flex-wrap gap-4 text-[9px] font-mono pointer-events-none">
+              <span class="text-eco-400 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-eco-400 inline-block"></span> CH1: Sensor 1 Botellas (Pines 7/6)
+              </span>
+              <span class="text-pet-400 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-pet-400 inline-block"></span> CH2: Sensor 2 Perrito (Pines 3/2)
+              </span>
+              <span class="text-purple-400 flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-purple-400 inline-block"></span> CH3: Servomotor PWM Pin 9
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: FSM, SUITE DE PRUEBAS, MONITOR SERIE & CÓDIGO (COL 5) -->
+      <div class="lg:col-span-5 space-y-5">
+        
+        <!-- MÁQUINA DE ESTADOS FINITA (FSM) EN TIEMPO REAL -->
+        <div class="glass-panel border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-diagram-project text-eco-400"></i>
+              <h4 class="text-xs font-black uppercase tracking-wider text-white font-tech">
+                Máquina de Estados Finita (FSM)
+              </h4>
+            </div>
+            <span class="text-[10px] font-mono bg-eco-950 text-eco-300 px-2.5 py-0.5 rounded-full border border-eco-800 font-bold">
+              ATmega328P
+            </span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <!-- Estado 1 -->
+            <div id="fsmCard1" class="p-3.5 rounded-2xl border-2 border-eco-500/70 bg-eco-950/40 text-eco-300 flex items-center justify-between transition-all duration-300">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-xl bg-eco-500/20 flex items-center justify-center font-bold text-eco-400 font-mono">1</div>
+                <div>
+                  <div class="font-black text-white">ESPERA_RECICLAJE</div>
+                  <div class="text-[10px] text-slate-400">Recepción y conteo PET (Umbral: &le;15cm)</div>
+                </div>
+              </div>
+              <span id="fsmPillCount" class="font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-950 border border-slate-700 text-eco-400">
+                0 / 5
+              </span>
+            </div>
+
+            <!-- Estado 2 -->
+            <div id="fsmCard2" class="p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 text-slate-400 flex items-center justify-between transition-all duration-300">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-400 font-mono">2</div>
+                <div>
+                  <div class="font-black text-slate-300">RECOMPENSA_DISPONIBLE</div>
+                  <div class="text-[10px] text-slate-400">Meta cumplida. Esperando canino (&le;20cm)</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-clock text-slate-500 text-xs"></i>
+            </div>
+
+            <!-- Estado 3 -->
+            <div id="fsmCard3" class="p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 text-slate-400 flex items-center justify-between transition-all duration-300">
+              <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-xl bg-slate-800 flex items-center justify-center font-bold text-slate-400 font-mono">3</div>
+                <div>
+                  <div class="font-black text-slate-300">DISPENSACION_ACTIVA</div>
+                  <div class="text-[10px] text-slate-400">Servo 180° por 5.0 s (~90 g ración)</div>
+                </div>
+              </div>
+              <i class="fa-solid fa-gear text-slate-500 text-xs"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- ESCENARIOS DE VALIDACIÓN (CAPÍTULO IV DEL INFORME) -->
+        <div class="glass-panel border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h4 class="text-xs font-black uppercase tracking-wider text-solar-400 flex items-center gap-2">
+              <i class="fa-solid fa-vial-circle-check"></i> Escenarios de Prueba de Laboratorio
+            </h4>
+            <span class="text-[10px] text-slate-400 font-mono">Validación Cap. IV</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <button id="btnScenarioNormal" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-left border border-slate-800 hover:border-eco-500/50 transition-all active:scale-95">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-check text-eco-400 text-[10px]"></i> Ensayo 1: Normal
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">5 botellas + canino en plato</div>
+            </button>
+
+            <button id="btnScenarioSecurity" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-left border border-slate-800 hover:border-amber-500/50 transition-all active:scale-95">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-amber-400 text-[10px]"></i> Ensayo 5: Seguridad
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Canino en plato con &lt; 5 pts</div>
+            </button>
+
+            <button id="btnScenarioStress" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-left border border-slate-800 hover:border-pet-500/50 transition-all active:scale-95">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-pet-400 text-[10px]"></i> Ensayo 4: Rápido
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Inserción rápida en serie</div>
+            </button>
+
+            <button id="btnScenarioReset" class="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 text-left border border-slate-800 hover:border-red-500/50 transition-all active:scale-95">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-rotate-left text-red-400 text-[10px]"></i> Reset Físico (R)
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Reinicia estados a 0/5</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- TERMINAL MONITOR SERIE INTERACTIVO COM3 @ 9600 BAUDIOS -->
+        <div class="bg-slate-950 border border-slate-800 rounded-3xl p-4 shadow-2xl font-mono text-xs space-y-2.5">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800 text-slate-400">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-eco-400"></span>
+              <span class="font-bold text-slate-200">Terminal Serie (COM3 @ 9600 bps)</span>
+            </div>
+            <button id="btnClearSerial" class="text-[10px] text-slate-500 hover:text-slate-300">
+              <i class="fa-solid fa-eraser"></i> Limpiar
+            </button>
+          </div>
+
+          <div id="serialLog" class="h-44 overflow-y-auto space-y-1 text-slate-300 pr-1 text-[11px] select-text">
+            <div class="text-eco-400 font-bold">=== RECICLA-CAN SOLAR PRO V3.0 ===</div>
+            <div class="text-slate-400 font-medium">Elaborado por: Damarish Yonsu Ch. C.</div>
+            <div class="text-slate-500">Sensor 1: Botellas PET [TRIG 7, ECHO 6]</div>
+            <div class="text-slate-500">Sensor 2: Presencia Perrito [TRIG 3, ECHO 2]</div>
+            <div class="text-slate-400">Sistema en reposo. Esperando envase PET...</div>
+          </div>
+
+          <!-- Comandos Serial de Prueba -->
+          <div class="pt-2 border-t border-slate-900 flex items-center justify-between text-[10px]">
+            <span class="text-slate-500">Inyectar Carácter:</span>
+            <div class="flex gap-1.5">
+              <button id="btnCmdBottle" class="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold">
+                'B' (Botella)
+              </button>
+              <button id="btnCmdReset" class="px-2.5 py-1 rounded bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold">
+                'R' (Reset)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MÉTRICAS DE IMPACTO AMBIENTAL Y COMUNITARIO -->
+        <div class="glass-panel border border-eco-500/30 rounded-3xl p-5 shadow-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-black uppercase tracking-wider text-eco-400 flex items-center gap-2">
+              <i class="fa-solid fa-leaf"></i> Métricas de Impacto Ecológico & Social
+            </h4>
+            <span class="text-[10px] text-slate-400 font-mono">Sesión Activa</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-center font-mono">
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div id="statBottles" class="text-xl font-black text-eco-400 font-tech">0</div>
+              <div class="text-[9px] text-slate-400 uppercase mt-0.5">Botellas PET</div>
+            </div>
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div id="statFood" class="text-xl font-black text-solar-400 font-tech">0 g</div>
+              <div class="text-[9px] text-slate-400 uppercase mt-0.5">Alimento</div>
+            </div>
+            <div class="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
+              <div id="statCo2" class="text-xl font-black text-pet-400 font-tech">0.00 kg</div>
+              <div class="text-[9px] text-slate-400 uppercase mt-0.5">CO₂ Evitado</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ================= DIAGRAMA DE CONEXIONES & PINOUT OFICIAL (CAPÍTULO III) ================= -->
+    <section class="pt-8 border-t border-slate-800 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <span class="text-eco-400 font-bold text-xs uppercase tracking-wider">Capítulo III • Apartado 3.5</span>
+          <h3 class="text-xl sm:text-2xl font-black text-white font-tech">
+            Esquema Eléctrico, Mapeo de Pines & Distribución de Potencia
+          </h3>
+        </div>
+        <div class="text-xs font-mono text-slate-300 bg-slate-900 px-3.5 py-1.5 rounded-xl border border-slate-800">
+          Voltaje Lógico: 5V DC • Fuente Primaria: 12V 4.5Ah + LM2596
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Bloque 1: Entradas / Sensores -->
+        <div class="glass-panel border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-xs font-black text-eco-400 uppercase">1. Sensores de Entrada</span>
+            <i class="fa-solid fa-satellite-dish text-eco-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Detección ultrasónica HC-SR04 de alta precisión mediante cálculo de tiempo de vuelo pulseln().
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] font-mono space-y-1.5 text-slate-300">
+            <div><span class="text-eco-400 font-bold">Pin D7:</span> TRIG Sensor 1 (Botellas)</div>
+            <div><span class="text-eco-400 font-bold">Pin D6:</span> ECHO Sensor 1 (Botellas)</div>
+            <div><span class="text-pet-400 font-bold">Pin D3:</span> TRIG Sensor 2 (Perrito)</div>
+            <div><span class="text-pet-400 font-bold">Pin D2:</span> ECHO Sensor 2 (Perrito)</div>
+          </div>
+        </div>
+
+        <!-- Bloque 2: Procesamiento y Visualización -->
+        <div class="glass-panel border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-xs font-black text-pet-400 uppercase">2. Control & Pantalla</span>
+            <i class="fa-solid fa-microchip text-pet-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Microcontrolador ATmega328P con comunicación serial I2C hacia display LCD 16×2 y diagnóstico LED.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] font-mono space-y-1.5 text-slate-300">
+            <div><span class="text-sky-400 font-bold">Pin A4:</span> SDA (Línea de datos I2C)</div>
+            <div><span class="text-sky-400 font-bold">Pin A5:</span> SCL (Línea de reloj I2C)</div>
+            <div><span class="text-red-400 font-bold">Pin D12:</span> LED Rojo (0/5 botellas)</div>
+            <div><span class="text-amber-400 font-bold">Pin D11:</span> LED Amarillo (1 a 4 botellas)</div>
+            <div><span class="text-emerald-400 font-bold">Pin D10:</span> LED Verde (Meta 5 alcanzada)</div>
+          </div>
+        </div>
+
+        <!-- Bloque 3: Actuadores & Potencia -->
+        <div class="glass-panel border border-slate-800 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <span class="text-xs font-black text-solar-400 uppercase">3. Actuadores & Potencia</span>
+            <i class="fa-solid fa-bolt text-solar-400"></i>
+          </div>
+          <p class="text-xs text-slate-400">
+            Servomotor metálico MG996R gobernado por PWM y circuito acústico piezoeléctrico de señalización.
+          </p>
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-[11px] font-mono space-y-1.5 text-slate-300">
+            <div><span class="text-purple-400 font-bold">Pin D9:</span> Servomotor MG996R (PWM)</div>
+            <div><span class="text-solar-400 font-bold">Pin D8:</span> Buzzer Activo 5V</div>
+            <div><span class="text-slate-400 font-bold">Step-Down LM2596:</span> 12V Batería &rarr; 5V VCC</div>
+            <div><span class="text-slate-400 font-bold">Regulador PWM:</span> Panel Solar 10W &rarr; Batería</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VISOR DEL CÓDIGO OFICIAL COMENTADO ================= -->
+    <section class="glass-panel border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+        <div>
+          <span class="text-xs font-bold text-eco-400 uppercase tracking-wider">Anexo A • Código Fuente Oficial en Arduino C++</span>
+          <h4 class="text-lg sm:text-xl font-black text-white font-tech">
+            Algoritmo de Filtrado, Control de Tiempo y Máquina de Estados
+          </h4>
+        </div>
+        <button id="btnCopyCode" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold flex items-center gap-2 transition-all active:scale-95">
+          <i class="fa-solid fa-copy text-eco-400"></i> Copiar Código Arduino
+        </button>
+      </div>
+
+      <pre class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto max-h-80 leading-relaxed"><code id="codeSnippet">// =====================================================================
+// RECICLA-CAN SOLAR - CODIGO FUENTE OFICIAL DE CONTROL
+// Trabajo de Investigacion Aplicada - Universidad Continental
+// Elaborado por: Damarish Yonsu Ch. C.
+// =====================================================================
+#include &lt;Wire.h&gt;
+#include &lt;LiquidCrystal_I2C.h&gt;
+#include &lt;Servo.h&gt;
+
+const byte LED_ROJO = 12;
+const byte LED_AMARILLO = 11;
+const byte LED_VERDE = 10;
+const byte PIN_BUZZER = 8;
+const byte PIN_SERVO = 9;
+
+const byte TRIG_BOTELLAS = 7;
+const byte ECHO_BOTELLAS = 6;
+const byte TRIG_PERRITO = 3;
+const byte ECHO_PERRITO = 2;
+
+const int META_BOTELLAS = 5;
+const float DISTANCIA_BOTELLA = 15.0; // cm
+const float DISTANCIA_PERRITO = 20.0; // cm
+const unsigned long TIEMPO_DISPENSADO = 5000; // 5 segundos
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo servoReciclaCan;
+
+int botellas = 0;
+bool recompensaDisponible = false;
+bool dispensando = false;
+
+float medirDistancia(byte pinTrig, byte pinEcho) {
+  digitalWrite(pinTrig, LOW);
+  delayMicroseconds(3);
+  digitalWrite(pinTrig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(pinTrig, LOW);
+  unsigned long duracion = pulseIn(pinEcho, HIGH, 30000UL);
+  if (duracion == 0) return -1.0;
+  return duracion * 0.0343 / 2.0;
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(LED_ROJO, OUTPUT);
+  pinMode(LED_AMARILLO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+  servoReciclaCan.attach(PIN_SERVO);
+  servoReciclaCan.write(0);
+  lcd.init();
+  lcd.backlight();
+  lcd.print("RECICLA-CAN");
+  lcd.setCursor(0, 1);
+  lcd.print("Iniciando...");
+}</code></pre>
+    </section>
+
+    <!-- ================= TARJETA DE RECONOCIMIENTO Y CONCLUSIÓN ================= -->
+    <section class="hologram-card p-6 sm:p-8 rounded-3xl border border-eco-500/40 shadow-2xl relative overflow-hidden">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+        <div>
+          <span class="text-xs font-bold text-eco-400 uppercase tracking-widest flex items-center gap-1.5">
+            <i class="fa-solid fa-graduation-cap text-solar-400"></i> UNIVERSIDAD CONTINENTAL • FACULTAD DE INGENIERÍA
+          </span>
+          <h4 class="text-xl sm:text-2xl font-black text-white mt-1 font-tech">
+            Proyecto de Investigación: RECICLA-CAN SOLAR
+          </h4>
+        </div>
+        <div class="text-right">
+          <span class="text-[10px] text-slate-400 block uppercase font-mono">Diseño, Automatización & Pruebas:</span>
+          <span class="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-eco-300 via-teal-200 to-solar-300">
+            Elaborado por: Damarish Yonsu Ch. C.
+          </span>
+        </div>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-300 mt-4 leading-relaxed">
+        El sistema <strong>RECICLA-CAN SOLAR</strong> valida de manera integral la convergencia de la automatización mecatrónica con el desarrollo socio-ambiental sostenible. Al canalizar incentivos inmediatos en alimento canino por cada ciclo de 5 botellas PET recicladas, y sostener su régimen de operación con un sistema fotovoltaico aislado de 10W y 12V, el proyecto sienta las bases de un mobiliario urbano inteligente y de alta resiliencia.
+      </p>
+    </section>
+
+  </main>
+
+  <!-- ================= FOOTER INSTITUCIONAL ================= -->
+  <footer class="bg-[#020408] border-t border-slate-800/80 py-6 px-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto space-y-1.5">
+      <p class="text-slate-400 font-medium">
+        Universidad Continental • Escuela Profesional de Ingeniería • Programación Aplicada
+      </p>
+      <p class="text-slate-300 font-semibold">
+        RECICLA-CAN SOLAR PRO • <span class="text-solar-300">Elaborado por: Damarish Yonsu Ch. C.</span>
+      </p>
+      <p class="text-[10px] text-slate-600 font-mono">Gemelo Digital 3D WebGL (Three.js) & Simulador Cinemático Físico 2.5D</p>
+    </div>
+  </footer>
+
+  <!-- ================= MOTOR LÓGICO, FÍSICO Y 3D THREE.JS ================= -->
+  <script>
+    // ================= ESTADO GLOBAL DEL SISTEMA =================
+    const META_BOTELLAS = 5;
+    let botellas = 0;
+    let recompensaDisponible = false;
+    let dispensando = false;
+    let sonidoHabilitado = true;
+    let isView3D = true; // true = Three.js 3D, false = Canvas 2.5D
+
+    // Sensores y Telemetría
+    let distBotella = 35.0; // cm (Sensor 1)
+    let distPerrito = 55.0; // cm (Sensor 2)
+    let radSolar = 85;      // % de irradiancia
+    let tolvaCroquetas = 85; // % de llenado
+
+    // Contadores de Impacto
+    let totalBotellas = 0;
+    let totalComidaGramos = 0;
+
+    // Historial para Osciloscopio
+    const scopePoints = 90;
+    let histS1 = new Array(scopePoints).fill(35);
+    let histS2 = new Array(scopePoints).fill(55);
+    let histPWM = new Array(scopePoints).fill(0);
+
+    // ================= WEB AUDIO API SINTETIZADOR PROFESIONAL =================
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return audioCtx;
+    }
+
+    // Tono Zumbador 1000 Hz (Confirmación botella)
+    function playBuzzerBottle() {
+      if (!sonidoHabilitado) return;
+      try {
+        const actx = getAudioCtx();
+        if (actx.state === 'suspended') actx.resume();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1000, actx.currentTime);
+        gain.gain.setValueAtTime(0.08, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    // Tono Zumbador 1500 Hz (Meta alcanzada / Dispensado)
+    function playBuzzerMeta() {
+      if (!sonidoHabilitado) return;
+      try {
+        const actx = getAudioCtx();
+        if (actx.state === 'suspended') actx.resume();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1500, actx.currentTime);
+        gain.gain.setValueAtTime(0.12, actx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.3);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.3);
+      } catch(e) {}
+    }
+
+    // Sonido motor eléctrico del servomotor
+    function playServoWhine() {
+      if (!sonidoHabilitado) return;
+      try {
+        const actx = getAudioCtx();
+        if (actx.state === 'suspended') actx.resume();
+        const osc = actx.createOscillator();
+        const gain = actx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, actx.currentTime);
+        osc.frequency.linearRampToValueAtTime(320, actx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.04, actx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, actx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start();
+        osc.stop(actx.currentTime + 0.4);
+      } catch(e) {}
+    }
+
+    // ================= TERMINAL MONITOR SERIE =================
+    function logSerial(msg, style = 'normal') {
+      const serial = document.getElementById('serialLog');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      if (style === 'green') div.className = 'text-eco-400 font-bold';
+      else if (style === 'yellow') div.className = 'text-solar-400 font-bold';
+      else if (style === 'cyan') div.className = 'text-pet-400';
+      else div.className = 'text-slate-300';
+      div.textContent = `[${time}] ${msg}`;
+      serial.appendChild(div);
+      serial.scrollTop = serial.scrollHeight;
+    }
+
+    // ================= ACTUALIZACIÓN LCD 16X2 & LEDS =================
+    function writeLcd(line1, line2) {
+      const pad = s => (s + '                ').substring(0, 16);
+      document.getElementById('lcdRow1').textContent = pad(line1);
+      document.getElementById('lcdRow2').textContent = pad(line2);
+    }
+
+    function updateHardwareHUD() {
+      const red = document.getElementById('ledRed');
+      const yellow = document.getElementById('ledYellow');
+      const green = document.getElementById('ledGreen');
+
+      red.className = 'w-3.5 h-3.5 rounded-full bg-red-950 border border-red-800 transition-all';
+      yellow.className = 'w-3.5 h-3.5 rounded-full bg-amber-950 border border-amber-800 transition-all';
+      green.className = 'w-3.5 h-3.5 rounded-full bg-emerald-950 border border-emerald-800 transition-all';
+
+      if (botellas === 0) {
+        red.className = 'w-3.5 h-3.5 rounded-full bg-red-500 shadow-[0_0_15px_#ef4444] transition-all';
+      } else if (botellas < META_BOTELLAS) {
+        yellow.className = 'w-3.5 h-3.5 rounded-full bg-amber-400 shadow-[0_0_15px_#f59e0b] transition-all';
+      } else {
+        green.className = 'w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-[0_0_15px_#10b981] transition-all';
+      }
+
+      // FSM
+      const c1 = document.getElementById('fsmCard1');
+      const c2 = document.getElementById('fsmCard2');
+      const c3 = document.getElementById('fsmCard3');
+      document.getElementById('fsmPillCount').textContent = `${botellas} / 5`;
+
+      [c1, c2, c3].forEach(c => {
+        c.className = 'p-3.5 rounded-2xl border border-slate-800 bg-slate-950/60 text-slate-400 flex items-center justify-between transition-all duration-300';
+      });
+
+      if (dispensando) {
+        c3.className = 'p-3.5 rounded-2xl border-2 border-solar-500 bg-solar-950/40 text-solar-300 flex items-center justify-between shadow-neon-solar transition-all duration-300';
+      } else if (recompensaDisponible) {
+        c2.className = 'p-3.5 rounded-2xl border-2 border-pet-500 bg-sky-950/40 text-sky-300 flex items-center justify-between shadow-neon-cyan transition-all duration-300';
+      } else {
+        c1.className = 'p-3.5 rounded-2xl border-2 border-eco-500 bg-eco-950/40 text-eco-300 flex items-center justify-between shadow-neon-green transition-all duration-300';
+      }
+    }
+
+    // ================= LÓGICA DE REGISTRO DE BOTELLA =================
+    function insertBottle() {
+      if (dispensando) {
+        logSerial("Dispensación activa. Entrada bloqueada temporalmente.", "yellow");
+        return;
+      }
+      if (recompensaDisponible) {
+        logSerial("Meta de 5 alcanzada. Esperando detección canina en comedero.", "yellow");
+        writeLcd("Meta alcanzada!", "Libera el sensor");
+        return;
+      }
+
+      // Generar efecto en 3D y 2.5D
+      spawnBottle3D();
+      spawnBottle2D();
+
+      logSerial("Botella PET introducida en ranura superior (15 × 5 cm)...", "normal");
+    }
+
+    function confirmBottleLogic() {
+      botellas++;
+      totalBotellas++;
+      document.getElementById('statBottles').textContent = totalBotellas;
+      document.getElementById('statCo2').textContent = (totalBotellas * 0.082).toFixed(2) + " kg";
+
+      playBuzzerBottle();
+      distBotella = 11.5; // Disparo ultrasónico
+      setTimeout(() => { distBotella = 35.0; }, 350);
+
+      updateHardwareHUD();
+      logSerial(`Sensor 1: Botella validada -> Puntaje: ${botellas}/5`, "green");
+
+      if (botellas >= META_BOTELLAS) {
+        recompensaDisponible = true;
+        playBuzzerMeta();
+        writeLcd("Meta alcanzada!", "Comida lista!");
+        logSerial("¡META LOGRADA! Servomotor en guardia. Sensor 2 esperando canino.", "cyan");
+        if (distPerrito <= 20.0) {
+          setTimeout(dispenseFood, 500);
+        }
+      } else {
+        writeLcd("Botella recibida", `Meta: ${botellas} de 5`);
+        setTimeout(() => {
+          if (!recompensaDisponible && !dispensando) {
+            writeLcd("Sigue reciclando", `Meta: ${botellas} de 5`);
+          }
+        }, 1300);
+      }
+    }
+
+    // ================= DISPENSACIÓN DE ALIMENTO =================
+    let servoAngle = 0;
+    function dispenseFood() {
+      if (dispensando || !recompensaDisponible) return;
+
+      dispensando = true;
+      recompensaDisponible = false;
+      updateHardwareHUD();
+
+      logSerial("Sensor 2: ¡Perrito verificado (< 20 cm)!", "cyan");
+      logSerial("Servomotor MG996R rotando a 180° por 5.0 segundos...", "green");
+      playServoWhine();
+      playBuzzerMeta();
+      writeLcd("Sirviendo comida", "Un momento...");
+
+      servoAngle = 180;
+      document.getElementById('valServoAngle').textContent = "180°";
+      document.getElementById('statusServoPWM').textContent = "Pulso: 2000 µs (Tope 180°)";
+
+      // Activar lluvia de croquetas
+      spawnKibbleCascade();
+
+      // Reducir tolva
+      tolvaCroquetas = Math.max(10, tolvaCroquetas - 5);
+      document.getElementById('lblHopperPercent').textContent = `${tolvaCroquetas}% (${(tolvaCroquetas * 0.03).toFixed(2)} kg)`;
+
+      setTimeout(() => {
+        servoAngle = 0;
+        document.getElementById('valServoAngle').textContent = "0°";
+        document.getElementById('statusServoPWM').textContent = "Pulso: 1000 µs (Tope 0°)";
+        playServoWhine();
+
+        totalComidaGramos += 90;
+        document.getElementById('statFood').textContent = `${totalComidaGramos} g`;
+
+        writeLcd("Buen provecho!", "Sigue reciclando");
+        logSerial("Ración entregada (~90g). Compuerta sellada en 0°.", "green");
+
+        setTimeout(() => {
+          botellas = 0;
+          dispensando = false;
+          updateHardwareHUD();
+          writeLcd("RECICLA-CAN", "Inserta botella");
+          logSerial("Sistema reseteado: Listo para un nuevo ciclo.", "normal");
+        }, 2200);
+
+      }, 4800);
+    }
+
+    // ================= MANEJO DE SENSORES =================
+    function setDogDistance(val) {
+      distPerrito = parseFloat(val);
+      document.getElementById('valDistanceS2').textContent = distPerrito.toFixed(1);
+      document.getElementById('badgeDistanceDog').textContent = `${distPerrito.toFixed(1)} cm`;
+
+      const status = document.getElementById('statusDistanceS2');
+      if (distPerrito <= 20.0) {
+        status.textContent = "CANINO DETECTADO (<=20cm)";
+        status.className = "text-[10px] text-eco-400 font-mono font-bold mt-0.5 truncate";
+        if (recompensaDisponible && !dispensando) {
+          dispenseFood();
+        }
+      } else {
+        status.textContent = "Zona desocupada (>25cm)";
+        status.className = "text-[10px] text-pet-400 font-mono mt-0.5 truncate";
+      }
+
+      // Actualizar posición del perro 3D
+      if (dogGroup3D) {
+        const ratio = (distPerrito - 6) / (65 - 6);
+        dogGroup3D.position.x = 8 + ratio * 14;
+      }
+    }
+
+    function setSolarRadiance(val) {
+      radSolar = parseInt(val);
+      const volt = (11.8 + (radSolar / 100) * 2.2).toFixed(1);
+      const watt = Math.round((radSolar / 100) * 1000);
+      const amps = ((radSolar / 100) * 0.72).toFixed(2);
+
+      document.getElementById('badgeSolarVal').textContent = `${watt} W/m² (${volt}V)`;
+      document.getElementById('valBatteryV').textContent = volt;
+      document.getElementById('statusSolarPanel').textContent = `PWM Flotación: +${amps}A`;
+
+      if (sunLight3D) {
+        sunLight3D.intensity = 0.2 + (radSolar / 100) * 1.5;
+      }
+    }
+
+    // ================= ENTORNO 3D WEBGL (THREE.JS) =================
+    let scene, camera, renderer, controls;
+    let totem3DGroup, dogGroup3D, sunLight3D;
+    let bottles3D = [];
+    let kibbles3D = [];
+    let servoArm3D;
+
+    function init3D() {
+      const container = document.getElementById('threeContainer');
+      const width = container.clientWidth || 620;
+      const height = container.clientHeight || 620;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x060913);
+
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.set(0, 15, 45);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 + 0.05;
+      controls.minDistance = 20;
+      controls.maxDistance = 80;
+
+      // Luces
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambientLight);
+
+      sunLight3D = new THREE.DirectionalLight(0xfff5cc, 1.4);
+      sunLight3D.position.set(25, 40, 30);
+      sunLight3D.castShadow = true;
+      scene.add(sunLight3D);
+
+      const blueRim = new THREE.DirectionalLight(0x38bdf8, 0.6);
+      blueRim.position.set(-25, 20, -20);
+      scene.add(blueRim);
+
+      // Piso de concreto / laboratorio
+      const floorGeo = new THREE.PlaneGeometry(120, 120);
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x0c1322, roughness: 0.8 });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.y = -18;
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // Grid decorativa
+      const grid = new THREE.GridHelper(100, 40, 0x1e293b, 0x0f172a);
+      grid.position.y = -17.9;
+      scene.add(grid);
+
+      // CONSTRUCCIÓN DEL TÓTEM (GABINETE 70 × 40 × 40 cm a escala 3D)
+      totem3DGroup = new THREE.Group();
+
+      // Chasis de MDF
+      const mdfMat = new THREE.MeshStandardMaterial({
+        color: 0x7c3f1d,
+        roughness: 0.65,
+        metalness: 0.1
+      });
+      const totemMesh = new THREE.Mesh(new THREE.BoxGeometry(16, 28, 16), mdfMat);
+      totemMesh.position.y = -4;
+      totemMesh.castShadow = true;
+      totemMesh.receiveShadow = true;
+      totem3DGroup.add(totemMesh);
+
+      // Panel Frontal con orificios simulados
+      const frontPanelMat = new THREE.MeshStandardMaterial({ color: 0x924b22, roughness: 0.5 });
+      const frontPanel = new THREE.Mesh(new THREE.BoxGeometry(15.6, 27.6, 0.4), frontPanelMat);
+      frontPanel.position.set(0, -4, 8.1);
+      totem3DGroup.add(frontPanel);
+
+      // Ranura de entrada PET (15 × 5 cm)
+      const slotMat = new THREE.MeshBasicMaterial({ color: 0x020617 });
+      const slotMesh = new THREE.Mesh(new THREE.BoxGeometry(7, 2.2, 0.6), slotMat);
+      slotMesh.position.set(0, 6.5, 8.2);
+      totem3DGroup.add(slotMesh);
+
+      // Panel Solar superior (10W - 18V)
+      const solarFrameMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 });
+      const solarFrame = new THREE.Mesh(new THREE.BoxGeometry(15, 1.2, 15), solarFrameMat);
+      solarFrame.position.set(0, 10.4, 0);
+      totem3DGroup.add(solarFrame);
+
+      const solarCellMat = new THREE.MeshStandardMaterial({
+        color: 0x1e3a8a,
+        roughness: 0.2,
+        metalness: 0.8
+      });
+      const solarCell = new THREE.Mesh(new THREE.BoxGeometry(14, 0.4, 14), solarCellMat);
+      solarCell.position.set(0, 10.9, 0);
+      totem3DGroup.add(solarCell);
+
+      // Bandeja comedero frontal (12 × 6 cm)
+      const bowlMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6, roughness: 0.3 });
+      const bowlMesh = new THREE.Mesh(new THREE.BoxGeometry(7, 2, 5), bowlMat);
+      bowlMesh.position.set(0, -16.5, 10);
+      bowlMesh.castShadow = true;
+      totem3DGroup.add(bowlMesh);
+
+      // Servomotor MG996R metálico
+      const servoBodyMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4 });
+      const servoBody = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.5, 2.5), servoBodyMat);
+      servoBody.position.set(0, -12, 7.8);
+      totem3DGroup.add(servoBody);
+
+      const servoArmMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.8 });
+      servoArm3D = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 3, 16), servoArmMat);
+      servoArm3D.position.set(0, -10.5, 8.8);
+      servoArm3D.rotation.z = Math.PI / 2;
+      totem3DGroup.add(servoArm3D);
+
+      scene.add(totem3DGroup);
+
+      // MODELADO DEL PERRITO EN 3D
+      dogGroup3D = new THREE.Group();
+      const dogBodyMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.7 });
+      const dogDarkMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 });
+
+      // Torso
+      const dTorso = new THREE.Mesh(new THREE.BoxGeometry(5.5, 4.5, 7.5), dogBodyMat);
+      dTorso.position.y = -12;
+      dTorso.castShadow = true;
+      dogGroup3D.add(dTorso);
+
+      // Cabeza
+      const dHead = new THREE.Mesh(new THREE.BoxGeometry(3.6, 3.6, 3.6), dogBodyMat);
+      dHead.position.set(0, -9, 4.5);
+      dHead.castShadow = true;
+      dogGroup3D.add(dHead);
+
+      // Hocico
+      const dSnout = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.8, 2.5), dogDarkMat);
+      dSnout.position.set(0, -9.8, 6.6);
+      dogGroup3D.add(dSnout);
+
+      // Orejas
+      const dEarL = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.6, 1.4), dogDarkMat);
+      dEarL.position.set(-1.9, -8.2, 4.5);
+      const dEarR = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.6, 1.4), dogDarkMat);
+      dEarR.position.set(1.9, -8.2, 4.5);
+      dogGroup3D.add(dEarL);
+      dogGroup3D.add(dEarR);
+
+      // Patitas
+      for (let px of [-1.8, 1.8]) {
+        for (let pz of [-2.5, 2.5]) {
+          const leg = new THREE.Mesh(new THREE.BoxGeometry(1.2, 4, 1.2), dogDarkMat);
+          leg.position.set(px, -15.5, pz);
+          leg.castShadow = true;
+          dogGroup3D.add(leg);
+        }
+      }
+
+      // Cola
+      const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.6, 4, 8), dogDarkMat);
+      tail.position.set(0, -10, -4.5);
+      tail.rotation.x = -Math.PI / 4;
+      dogGroup3D.add(tail);
+
+      dogGroup3D.position.set(22, 0, 9);
+      scene.add(dogGroup3D);
+
+      // Responsive
+      window.addEventListener('resize', onWindowResize3D);
+    }
+
+    function onWindowResize3D() {
+      const container = document.getElementById('threeContainer');
+      if (!container || !renderer || !camera) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    // Inserción de botella en 3D
+    function spawnBottle3D() {
+      const bottleMat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.85,
+        roughness: 0.1,
+        metalness: 0.1
+      });
+      const bottleGeo = new THREE.CylinderGeometry(1, 1, 4.5, 16);
+      const bottleMesh = new THREE.Mesh(bottleGeo, bottleMat);
+      bottleMesh.position.set(0, 16, 8.2);
+      bottleMesh.rotation.x = Math.PI / 3;
+      scene.add(bottleMesh);
+
+      bottles3D.push({
+        mesh: bottleMesh,
+        vy: -0.45,
+        rotSpd: 0.05,
+        counted: false
+      });
+    }
+
+    // Cascada de croquetas 3D
+    function spawnKibbleCascade() {
+      const kibbleMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.9 });
+      for (let i = 0; i < 35; i++) {
+        setTimeout(() => {
+          if (dispensando) {
+            const k = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 8), kibbleMat);
+            k.position.set((Math.random() - 0.5) * 2, -10, 8.8);
+            scene.add(k);
+            kibbles3D.push({
+              mesh: k,
+              vx: (Math.random() - 0.5) * 0.15,
+              vy: -0.4 - Math.random() * 0.2,
+              vz: 0.08 + Math.random() * 0.08
+            });
+          }
+        }, i * 110);
+      }
+    }
+
+    // Bucle de animación 3D
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+
+      if (controls) controls.update();
+
+      // Botellas en física 3D
+      for (let i = bottles3D.length - 1; i >= 0; i--) {
+        const b = bottles3D[i];
+        b.mesh.position.y += b.vy;
+        b.mesh.rotation.y += b.rotSpd;
+
+        // Detección en la ranura
+        if (b.mesh.position.y <= 6.5 && !b.counted) {
+          b.counted = true;
+          confirmBottleLogic();
+        }
+
+        if (b.mesh.position.y <= -2) {
+          scene.remove(b.mesh);
+          bottles3D.splice(i, 1);
+        }
+      }
+
+      // Croquetas en física 3D
+      for (let i = kibbles3D.length - 1; i >= 0; i--) {
+        const k = kibbles3D[i];
+        k.mesh.position.x += k.vx;
+        k.mesh.position.y += k.vy;
+        k.mesh.position.z += k.vz;
+
+        if (k.mesh.position.y <= -16.5) {
+          k.mesh.position.y = -16.5;
+          k.vx = 0; k.vy = 0; k.vz = 0;
+          // Eliminar gradualmente
+          setTimeout(() => {
+            scene.remove(k.mesh);
+          }, 3500);
+          kibbles3D.splice(i, 1);
+        }
+      }
+
+      // Animación brazo servomotor
+      if (servoArm3D) {
+        servoArm3D.rotation.y = (servoAngle * Math.PI) / 180;
+      }
+
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
+    }
+
+    // ================= ENTORNO 2.5D INTERACTIVO (CANVAS SECUNDARIO) =================
+    const canvas2D = document.getElementById('totem2DCanvas');
+    const ctx2D = canvas2D.getContext('2d');
+    let bottles2D = [];
+
+    function spawnBottle2D() {
+      bottles2D.push({
+        x: 180,
+        y: 40,
+        vx: 1.2,
+        vy: 2.2,
+        rot: 0.1,
+        counted: false
+      });
+    }
+
+    function renderTotem2D() {
+      ctx2D.clearRect(0, 0, canvas2D.width, canvas2D.height);
+
+      // Fondo
+      ctx2D.fillStyle = '#060913';
+      ctx2D.fillRect(0, 0, canvas2D.width, canvas2D.height);
+
+      // Chasis 2.5D
+      ctx2D.fillStyle = '#7c3f1d';
+      ctx2D.fillRect(70, 50, 240, 520);
+      ctx2D.strokeStyle = '#381806';
+      ctx2D.lineWidth = 4;
+      ctx2D.strokeRect(70, 50, 240, 520);
+
+      // Ranura
+      ctx2D.fillStyle = '#020617';
+      ctx2D.fillRect(110, 80, 160, 40);
+
+      // Comedero
+      ctx2D.fillStyle = '#1e293b';
+      ctx2D.fillRect(130, 490, 120, 50);
+
+      // Botellas en 2D
+      for (let i = bottles2D.length - 1; i >= 0; i--) {
+        const b = bottles2D[i];
+        b.x += b.vx;
+        b.y += b.vy;
+        b.vy += 0.2;
+        b.rot += 0.05;
+
+        ctx2D.save();
+        ctx2D.translate(b.x, b.y);
+        ctx2D.rotate(b.rot);
+        ctx2D.font = '24px serif';
+        ctx2D.fillText('🍾', -12, 10);
+        ctx2D.restore();
+
+        if (b.y > 110 && !b.counted) {
+          b.counted = true;
+          confirmBottleLogic();
+        }
+
+        if (b.y > 300) {
+          bottles2D.splice(i, 1);
+        }
+      }
+
+      requestAnimationFrame(renderTotem2D);
+    }
+
+    // ================= OSCILOSCOPIO DIGITAL DE DOBLE CANAL (DSO) =================
+    const scopeCanvas = document.getElementById('scopeCanvas');
+    const scopeCtx = scopeCanvas.getContext('2d');
+
+    function drawScopeEngine() {
+      scopeCtx.clearRect(0, 0, scopeCanvas.width, scopeCanvas.height);
+
+      // Rejilla
+      scopeCtx.strokeStyle = 'rgba(30, 41, 59, 0.5)';
+      scopeCtx.lineWidth = 1;
+      for (let x = 0; x < scopeCanvas.width; x += 35) {
+        scopeCtx.beginPath();
+        scopeCtx.moveTo(x, 0);
+        scopeCtx.lineTo(x, scopeCanvas.height);
+        scopeCtx.stroke();
+      }
+      for (let y = 0; y < scopeCanvas.height; y += 22) {
+        scopeCtx.beginPath();
+        scopeCtx.moveTo(0, y);
+        scopeCtx.lineTo(scopeCanvas.width, y);
+        scopeCtx.stroke();
+      }
+
+      // Actualizar buffers
+      histS1.shift(); histS1.push(distBotella);
+      histS2.shift(); histS2.push(distPerrito);
+      histPWM.shift(); histPWM.push(servoAngle);
+
+      // Trazo Sensor 1 (Verde)
+      scopeCtx.strokeStyle = '#34d399';
+      scopeCtx.lineWidth = 2;
+      scopeCtx.beginPath();
+      for (let i = 0; i < histS1.length; i++) {
+        const x = (i / (histS1.length - 1)) * scopeCanvas.width;
+        const y = 80 - (histS1[i] / 60) * 55;
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      }
+      scopeCtx.stroke();
+
+      // Trazo Sensor 2 (Azul)
+      scopeCtx.strokeStyle = '#38bdf8';
+      scopeCtx.lineWidth = 2;
+      scopeCtx.beginPath();
+      for (let i = 0; i < histS2.length; i++) {
+        const x = (i / (histS2.length - 1)) * scopeCanvas.width;
+        const y = 95 - (histS2[i] / 70) * 65;
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      }
+      scopeCtx.stroke();
+
+      // Trazo Servo PWM (Púrpura)
+      scopeCtx.strokeStyle = '#c084fc';
+      scopeCtx.lineWidth = 2;
+      scopeCtx.beginPath();
+      for (let i = 0; i < histPWM.length; i++) {
+        const x = (i / (histPWM.length - 1)) * scopeCanvas.width;
+        const y = 100 - (histPWM[i] / 180) * 35;
+        if (i === 0) scopeCtx.moveTo(x, y);
+        else scopeCtx.lineTo(x, y);
+      }
+      scopeCtx.stroke();
+
+      setTimeout(drawScopeEngine, 1000 / 30);
+    }
+
+    // ================= REINICIO GLOBAL DEL SISTEMA =================
+    function resetSimulator() {
+      botellas = 0;
+      recompensaDisponible = false;
+      dispensando = false;
+      servoAngle = 0;
+      updateHardwareHUD();
+      writeLcd("RECICLA-CAN", "Inserta botella");
+      logSerial("Sistema reiniciado a valores nominales (0/5).", "yellow");
+    }
+
+    // ================= INICIALIZACIÓN DE EVENTOS =================
+    window.onload = function() {
+      init3D();
+      animate3D();
+      renderTotem2D();
+      drawScopeEngine();
+      updateHardwareHUD();
+
+      // Botón insertar botella
+      document.getElementById('btnInsertBottle').addEventListener('click', insertBottle);
+
+      // Slider perrito
+      const sliderDog = document.getElementById('sliderDog');
+      sliderDog.addEventListener('input', (e) => {
+        setDogDistance(e.target.value);
+      });
+
+      // Botón acercar perrito
+      document.getElementById('btnQuickDog').addEventListener('click', () => {
+        if (distPerrito > 20) {
+          sliderDog.value = 14;
+          setDogDistance(14);
+        } else {
+          sliderDog.value = 55;
+          setDogDistance(55);
+        }
+      });
+
+      // Slider solar
+      document.getElementById('sliderSolar').addEventListener('input', (e) => {
+        setSolarRadiance(e.target.value);
+      });
+
+      // Botón Rellenar tolva
+      document.getElementById('btnRefillHopper').addEventListener('click', () => {
+        tolvaCroquetas = 100;
+        document.getElementById('lblHopperPercent').textContent = "100% (3.00 kg)";
+        logSerial("Tolva reabastecida al 100% con 3.0 kg de alimento seco.", "green");
+      });
+
+      // Toggle 3D / 2.5D
+      document.getElementById('btnToggle3D').addEventListener('click', () => {
+        isView3D = !isView3D;
+        const container3D = document.getElementById('threeContainer');
+        const container2D = document.getElementById('totem2DCanvas');
+        const text = document.getElementById('textViewMode');
+        const help = document.getElementById('canvasHelpText');
+
+        if (isView3D) {
+          container3D.classList.remove('hidden');
+          container3D.classList.add('block');
+          container2D.classList.add('hidden');
+          container2D.classList.remove('block');
+          text.textContent = "Vista: 3D Interactivo";
+          help.innerHTML = '<i class="fa-solid fa-hand-pointer text-eco-400 mr-1"></i> Arrastra para rotar en 3D • Rueda para zoom';
+          onWindowResize3D();
+        } else {
+          container3D.classList.add('hidden');
+          container3D.classList.remove('block');
+          container2D.classList.remove('hidden');
+          container2D.classList.add('block');
+          text.textContent = "Vista: 2.5D Cinemática";
+          help.innerHTML = '<i class="fa-solid fa-eye text-pet-400 mr-1"></i> Corte transversal 2.5D con visualización de ductos';
+        }
+      });
+
+      // Toggle Sonido
+      document.getElementById('btnSoundToggle').addEventListener('click', () => {
+        sonidoHabilitado = !sonidoHabilitado;
+        const icon = document.getElementById('iconSound');
+        const text = document.getElementById('textSound');
+        if (sonidoHabilitado) {
+          icon.className = 'fa-solid fa-volume-high text-solar-400';
+          text.textContent = 'Audio: 1000/1500 Hz ON';
+        } else {
+          icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+          text.textContent = 'Audio: MUTE';
+        }
+      });
+
+      // Toggle Sol / Noche
+      document.getElementById('btnDayNight').addEventListener('click', () => {
+        const sSlider = document.getElementById('sliderSolar');
+        if (radSolar > 20) {
+          sSlider.value = 0;
+          setSolarRadiance(0);
+          document.getElementById('iconDayNight').className = 'fa-solid fa-moon text-pet-400';
+          document.getElementById('textDayNight').textContent = 'Modo: Noche (0 W/m²)';
+        } else {
+          sSlider.value = 85;
+          setSolarRadiance(85);
+          document.getElementById('iconDayNight').className = 'fa-solid fa-sun text-solar-400';
+          document.getElementById('textDayNight').textContent = 'Modo: Mediodía (1000 W/m²)';
+        }
+      });
+
+      // Demo Secuencial Completa
+      document.getElementById('btnAutoDemo').addEventListener('click', () => {
+        logSerial("Iniciando secuencia de demostración automatizada...", "cyan");
+        let step = 0;
+        const interval = setInterval(() => {
+          if (step < 5) {
+            insertBottle();
+            step++;
+          } else if (step === 5) {
+            sliderDog.value = 13;
+            setDogDistance(13);
+            step++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 1100);
+      });
+
+      // Escenarios de prueba (Capítulo IV)
+      document.getElementById('btnScenarioNormal').addEventListener('click', () => {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(insertBottle, i * 320);
+        }
+        setTimeout(() => {
+          sliderDog.value = 14;
+          setDogDistance(14);
+        }, 2100);
+      });
+
+      document.getElementById('btnScenarioSecurity').addEventListener('click', () => {
+        sliderDog.value = 12;
+        setDogDistance(12);
+        logSerial("Prueba de Seguridad Lógica: Canino presente pero puntaje insuficiente. Dispensación bloqueada.", "yellow");
+      });
+
+      document.getElementById('btnScenarioStress').addEventListener('click', () => {
+        for (let i = 0; i < 5; i++) {
+          setTimeout(insertBottle, i * 160);
+        }
+      });
+
+      document.getElementById('btnScenarioReset').addEventListener('click', resetSimulator);
+
+      // Comandos Terminal Serie
+      document.getElementById('btnCmdBottle').addEventListener('click', insertBottle);
+      document.getElementById('btnCmdReset').addEventListener('click', resetSimulator);
+      document.getElementById('btnClearSerial').addEventListener('click', () => {
+        document.getElementById('serialLog').innerHTML = '<div class="text-slate-500 italic">[Terminal serie reiniciado]</div>';
+      });
+
+      // Copiar Código Arduino
+      document.getElementById('btnCopyCode').addEventListener('click', () => {
+        const code = document.getElementById('codeSnippet').innerText;
+        const textarea = document.createElement('textarea');
+        textarea.value = code;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert = null; // No alerts rule
+        logSerial("Código Arduino copiado al portapapeles exitosamente.", "green");
+      });
+    };
+  </script>
+</body>
+</html>
